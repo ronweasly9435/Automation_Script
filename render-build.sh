@@ -1,13 +1,16 @@
 #!/bin/bash
-set -ex # Debug mode
+set -e # Exit on error
 
-# Install latest Chrome
-curl -Lo chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-sudo apt install -y ./chrome.deb
-rm chrome.deb
+# Install Chrome (correct package name for Render)
+sudo apt-get update
+sudo apt-get install -y wget gnupg
+wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+sudo apt-get update
+sudo apt-get install -y google-chrome-stable
 
-# Verify exact binary path
-sudo find / -name "chrome" -type f 2>/dev/null | grep -i google
+# Verify installation
+ls -la /usr/bin/google-chrome # This should exist
 
-# Install Node modules
+# Install Node dependencies
 npm install --production
