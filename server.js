@@ -14,6 +14,35 @@ app.use(cors({
 }));
 
 app.use(express.json());
+async function getChromePath() {
+  // 1. First check for Render.com environment
+  if (process.env.RENDER) {
+    const renderPath = '/usr/bin/google-chrome';
+    console.log('Running on Render, using path:', renderPath);
+    return renderPath;
+  }
+
+  // 2. Check for Windows
+  if (process.platform === 'win32') {
+    const winPaths = [
+      process.env.PROGRAMFILES + '\\Google\\Chrome\\Application\\chrome.exe',
+      process.env.LOCALAPPDATA + '\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+    ];
+    
+    for (const winPath of winPaths) {
+      if (fs.existsSync(winPath)) {
+        console.log('Found Windows Chrome at:', winPath);
+        return winPath;
+      }
+    }
+    throw new Error('Chrome not found in standard Windows locations');
+  }
+
+  // 3. Default to Puppeteer's bundled Chromium
+  console.log('Using default Puppeteer executable');
+  return puppeteer.executablePath();
+}
 
 // Your product pairs array
 const productPairs = [
@@ -347,7 +376,7 @@ async function scrapeAllProducts() {
       '--disable-dev-shm-usage',  // Important for Render's limited memory
       '--single-process'         // Helps with memory constraints
     ],
-    executablePath: '/usr/bin/google-chrome-stable'
+    executablePath: await getChromePath() 
   });
   for (const pair of productPairs) {
     try {
