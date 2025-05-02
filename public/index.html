@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Comparison Scraper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .status {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .download-btn {
+            background-color: #2196F3;
+        }
+        .download-btn:hover {
+            background-color: #0b7dda;
+        }
+        .log {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Product Comparison Scraper</h1>
+        
+        <button id="startBtn" class="button">Start Scraping</button>
+        <button id="downloadBtn" class="button download-btn" disabled>Download CSV</button>
+        
+        <div class="progress-container">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+        
+        <div id="status" class="status">Ready to start</div>
+        
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('startBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const progressBar = document.getElementById('progressBar');
+        const statusText = document.getElementById('status');
+        const logContainer = document.getElementById('log');
+        
+        let checkInterval;
+        
+        function addLog(message) {
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        async function checkProgress() {
+            try {
+                const response = await fetch('/api/status');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to get status');
+                }
+
+                if (data.inProgress) {
+                    const progressPercent = (data.progress / data.total) * 100;
+                    progressBar.style.width = `${progressPercent}%`;
+                    statusText.textContent = `Processing ${data.progress} of ${data.total} products...`;
+                } else if (data.completed) {
+                    clearInterval(checkInterval);
+                    progressBar.style.width = '100%';
+                    statusText.textContent = 'Scraping completed!';
+                    downloadBtn.disabled = false;
+                    addLog('Scraping process completed successfully.');
+                }
+            } catch (error) {
+                addLog(`Status check error: ${error.message}`);
+                console.error('Status check error:', error);
+            }
+        }
+        
+        startBtn.addEventListener('click', async () => {
+            startBtn.disabled = true;
+            logContainer.innerHTML = '';
+            addLog('Starting scraping process...');
+            
+            try {
+                const response = await fetch('/api/start-scraping', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Unknown error occurred');
+                }
+
+                addLog('Scraping process started successfully.');
+                checkInterval = setInterval(checkProgress, 1000);
+            } catch (error) {
+                addLog(`Error: ${error.message}`);
+                startBtn.disabled = false;
+                console.error('Fetch error:', error);
+            }
+        });
+        
+        downloadBtn.addEventListener('click', () => {
+            window.location.href = '/api/download';
+        });
+    </script>
+</body>
+</html>
