@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "install-chromium": "apt-get update && apt-get install -y chromium-browser"
+    "install-chrome": "apt-get update && apt-get install -y google-chrome-stable"
   },
   "keywords": [],
   "author": "",

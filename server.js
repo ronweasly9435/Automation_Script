@@ -347,8 +347,7 @@ async function scrapeAllProducts() {
       '--disable-dev-shm-usage',  // Important for Render's limited memory
       '--single-process'         // Helps with memory constraints
     ],
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || 
-      '/usr/bin/chromium-browser' // Fallback path
+    executablePath: '/usr/bin/google-chrome-stable'
   });
   for (const pair of productPairs) {
     try {
