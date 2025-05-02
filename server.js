@@ -339,12 +339,17 @@ async function scrapeAllProducts() {
   currentProgress = 0;
   results = [];
   
-  const browser = await puppeteer.launch({ 
+  const browser = await puppeteer.launch({
     headless: true,
-  args: ['--no-sandbox', '--disable-setuid-sandbox'], 
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath() 
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',  // Important for Render's limited memory
+      '--single-process'         // Helps with memory constraints
+    ],
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || 
+      '/usr/bin/chromium-browser' // Fallback path
   });
-
   for (const pair of productPairs) {
     try {
       const [amazonData, flipkartData] = await Promise.all([
