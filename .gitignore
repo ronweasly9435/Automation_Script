@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Downloaded files
+downloads/
+
+# Puppeteer cached files
+.local-chromium/
+
+# System files
+.DS_Store
+Thumbs.db
