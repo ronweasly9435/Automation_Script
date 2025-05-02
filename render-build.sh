@@ -1,8 +1,13 @@
 #!/bin/bash
+set -ex # Debug mode
 
-# Install Chrome for Puppeteer
-apt-get update
-apt-get install -y google-chrome-stable
+# Install latest Chrome
+curl -Lo chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt install -y ./chrome.deb
+rm chrome.deb
 
-# Install Node.js dependencies
+# Verify exact binary path
+sudo find / -name "chrome" -type f 2>/dev/null | grep -i google
+
+# Install Node modules
 npm install --production
